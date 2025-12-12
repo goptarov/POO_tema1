@@ -82,13 +82,41 @@ public class Board {
 
     public boolean isValidMove(Position from, Position to){
         Piece piece = getPieceAt(from);
+        Piece taken = getPieceAt(to);
+
         if (piece == null)
             return false;
 
-        if (piece.getPossibleMoves(this) == null || !piece.getPossibleMoves(this).contains(to))
+        if (piece.getPossibleMoves(this) == null)
             return false;
 
-        //TODO: Check if moving this piece would put the king in check.
+        if (!piece.getPossibleMoves(this).contains(to))
+            return false;
+
+        //Simulating the move to check if through this move the king is left in check.
+        pieces.removeIf(pair -> pair.getKey().equals(from)); //remove piece that we move
+
+        if (taken != null) //
+            pieces.removeIf(pair -> pair.getKey().equals(to)); //if we are taking a piece, remove it aswell
+
+        piece.setPosition(to);
+        pieces.add(new ChessPair<>(to, piece)); //add the initial piece to the moved position
+
+        for (ChessPair<Position, Piece> pair : pieces){
+            for (Position move : pair.getValue().getPossibleMoves(this)){
+                //if same color then this move would leave the piece that is being moved's king in check(illegal), if different color then through this move the opponent gets checked.
+                if (this.getPieceAt(move) instanceof King && this.getPieceAt(move).getColor() == piece.getColor())
+                    return false;
+            }
+        }
+
+        pieces.removeIf(pair -> pair.getKey().equals(to)); // remove our piece from the moved position
+
+        if (taken != null)
+            pieces.add(new ChessPair<>(to, taken)); //if we took a piece, put it back
+
+        piece.setPosition(from);
+        pieces.add(new ChessPair<>(from, piece)); //put the piece back in the initial position
 
         return true;
     }

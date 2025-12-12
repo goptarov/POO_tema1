@@ -1,6 +1,7 @@
 package pieces;
 
 import board.Board;
+import board.ChessPair;
 import board.Colors;
 import board.Position;
 
@@ -50,10 +51,9 @@ public abstract class Piece implements ChessPiece{
 
     @Override
     public boolean checkForCheck(Board board, Position kingPosition) {
-        List<Position> possibleMoves = this.getPossibleMoves(board);
 
-        for (Position possibleMove : possibleMoves) {
-            if (possibleMove.equals(kingPosition)) {
+        for (ChessPair<Position, Piece> pair : board.pieces) {
+            if (pair.getValue().getPossibleMoves(board).equals(kingPosition)) {
                 return true;
             }
         }
