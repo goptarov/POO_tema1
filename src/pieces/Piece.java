@@ -29,7 +29,7 @@ public abstract class Piece implements ChessPiece{
     }
 
     void addMove(Board board, List<Position> moves, Position pos, int[] metAPiece, int x){
-        if (board.isValidCoordinate(pos) && metAPiece[x] == 0){
+        if (!(pos.getX() < 'A' || pos.getX() > 'H' || pos.getY() < 1 || pos.getY() > 8 && metAPiece[x] == 0)){
             if (board.getPieceAt(pos) == null) //move
                 moves.add(pos);
             else{
@@ -41,7 +41,7 @@ public abstract class Piece implements ChessPiece{
     }
 
     void addKingMove(Board board, List<Position> moves, Position pos){
-        if (board.isValidCoordinate(pos)){
+        if (!(pos.getX() < 'A' || pos.getX() > 'H' || pos.getY() < 1 || pos.getY() > 8)){
             if (board.getPieceAt(pos) == null)
                 moves.add(pos);
             else if (board.getPieceAt(pos).getColor() != this.getColor())
@@ -51,7 +51,6 @@ public abstract class Piece implements ChessPiece{
 
     @Override
     public boolean checkForCheck(Board board, Position kingPosition) {
-
         for (ChessPair<Position, Piece> pair : board.pieces) {
             if (pair.getValue().getPossibleMoves(board).equals(kingPosition)) {
                 return true;

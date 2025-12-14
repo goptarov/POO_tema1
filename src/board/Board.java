@@ -2,8 +2,9 @@ package board;
 
 import exceptions.InvalidMoveException;
 import pieces.*;
-import board.Colors;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
 public class Board {
@@ -17,28 +18,28 @@ public class Board {
             Position whitePiece = new Position(col,1);
             Position blackPiece = new Position(col,8);
 
-            pieces.add(new ChessPair<>(whitePawn, new Pawn(Colors.White, whitePawn)));
-            pieces.add(new ChessPair<>(blackPawn, new Pawn(Colors.Black, blackPawn)));
+            pieces.add(new ChessPair<>(whitePawn, new Pawn(Colors.WHITE, whitePawn)));
+            pieces.add(new ChessPair<>(blackPawn, new Pawn(Colors.BLACK, blackPawn)));
 
             if (col == 'A' || col == 'H'){
-                pieces.add(new ChessPair<>(whitePiece, new Rook(Colors.White, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Rook(Colors.Black, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, new Rook(Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, new Rook(Colors.BLACK, blackPiece)));
             }
             if (col == 'B' || col == 'G'){
-                pieces.add(new ChessPair<>(whitePiece, new Knight(Colors.White, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Knight(Colors.Black, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, new Knight(Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, new Knight(Colors.BLACK, blackPiece)));
             }
             if (col == 'C' || col == 'F'){
-                pieces.add(new ChessPair<>(whitePiece, new Bishop(Colors.White, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Bishop(Colors.Black, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, new Bishop(Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, new Bishop(Colors.BLACK, blackPiece)));
             }
             if (col == 'D'){
-                pieces.add(new ChessPair<>(whitePiece, new Queen(Colors.White, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Queen(Colors.Black, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, new Queen(Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, new Queen(Colors.BLACK, blackPiece)));
             }
             if (col == 'E'){
-                pieces.add(new ChessPair<>(whitePiece, new King(Colors.White, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new King(Colors.Black, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, new King(Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, new King(Colors.BLACK, blackPiece)));
             }
         }
 
@@ -69,6 +70,7 @@ public class Board {
         pieces.removeIf(pair -> pair.getKey().equals(from));
         piece.setPosition(to);
         pieces.add(new ChessPair<>(to, piece));
+
     }
 
     public Piece getPieceAt(Position position){
@@ -87,13 +89,12 @@ public class Board {
         if (piece == null)
             return false;
 
-        if (piece.getPossibleMoves(this) == null)
-            return false;
-
-        if (!piece.getPossibleMoves(this).contains(to))
+        if (piece.getPossibleMoves(this) == null || !piece.getPossibleMoves(this).contains(to))
             return false;
 
         //Simulating the move to check if through this move the king is left in check.
+        boolean isValid = true;
+
         pieces.removeIf(pair -> pair.getKey().equals(from)); //remove piece that we move
 
         if (taken != null) //
@@ -102,14 +103,20 @@ public class Board {
         piece.setPosition(to);
         pieces.add(new ChessPair<>(to, piece)); //add the initial piece to the moved position
 
-        for (ChessPair<Position, Piece> pair : pieces){
-            for (Position move : pair.getValue().getPossibleMoves(this)){
-                //if same color then this move would leave the piece that is being moved's king in check(illegal), if different color then through this move the opponent gets checked.
-                if (this.getPieceAt(move) instanceof King && this.getPieceAt(move).getColor() == piece.getColor())
-                    return false;
-            }
-        }
 
+        for (ChessPair<Position, Piece> pair : pieces) {
+
+            if (pair.getValue().getColor() == piece.getColor()) continue;
+
+            for (Position move : pair.getValue().getPossibleMoves(this)) {
+                //if same color then this move would leave the piece that is being moved's king in check(illegal), if different color then through this move the opponent gets checked.
+                if (this.getPieceAt(move) instanceof King) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (!isValid) break;
+        }
         pieces.removeIf(pair -> pair.getKey().equals(to)); // remove our piece from the moved position
 
         if (taken != null)
@@ -118,12 +125,20 @@ public class Board {
         piece.setPosition(from);
         pieces.add(new ChessPair<>(from, piece)); //put the piece back in the initial position
 
-        return true;
+        return isValid;
     }
 
-    public boolean isValidCoordinate(Position position){
-        if (position.getX() < 'A' || position.getX() > 'H' || position.getY() < 1 || position.getY() > 8)
-            return false;
-        return true;
+    public List<ChessPair<Position, Piece>> getPiecesByColor(Colors color){
+        List<ChessPair<Position, Piece>> ret = new ArrayList<>();
+
+        for (ChessPair<Position, Piece> pair : pieces)
+            if (pair.getValue().getColor() == color)
+                ret.add(pair);
+
+        return ret;
+    }
+
+    public boolean isValidCoordinate(Position pos){
+        return pos.getX() >= 'A' && pos.getX() <= 'H' && pos.getY() >= 1 && pos.getY() <= 8;
     }
 }

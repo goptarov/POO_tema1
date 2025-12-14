@@ -1,44 +1,124 @@
+import Game.Game;
+import Game.User;
 import board.Board;
 import board.Position;
-import exceptions.InvalidMoveException;
-import pieces.Bishop;
-import pieces.Pawn;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import pieces.Piece;
 
-import java.util.List;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class Main{
-    public static void main(String[] args){
-        Board board = new Board();
-        Position startPosition = new Position('C', 1);
-        Position endPosition = new Position('F', 4);
+    List<User> users = new ArrayList<>();
+    Map<Integer, Game> games = new HashMap<>();
+    User currentUser;
+    Scanner sc = new Scanner(System.in);
 
-        board.initialize();
+    public void read(){
+        try {
+            this.games = JsonReaderUtil.readGamesAsMap(Paths.get("games.json"));
+            this.users = JsonReaderUtil.readUsers(Paths.get("accounts.json"), games);
+            System.out.println("Successfully loaded " + users.size() + " users and " + games.size() + " games.");
+        } catch (IOException | ParseException e){
+            System.out.println(e.getMessage());
+        }
+    }
 
-        Piece whiteBishop = board.getPieceAt(startPosition);
-        List<Position> moves = whiteBishop.getPossibleMoves(board);
+    public void write(){
+        JSONArray usersList = new JSONArray();
+        for(User u : users){
+            JSONObject userObj = new JSONObject();
+            userObj.put("email", u.getEmail());
+            userObj.put("password", u.getPassword());
+            userObj.put("points", u.getPoints());
 
-        for (Position move : moves) {
-            System.out.println(move);
+            JSONArray gameIds = new JSONArray();
+            for(Game g : u.getActiveGames()){
+                gameIds.add(g.getId());
+            }
+            userObj.put("games", gameIds);
+
+            usersList.add(userObj);
         }
 
-        board.pieces.removeIf(pair -> pair.getKey().equals(new Position('D', 2)));
-        board.pieces.removeIf(pair -> pair.getKey().equals(new Position('C', 2)));
-        board.pieces.removeIf(pair -> pair.getKey().equals(new Position('B', 2)));
-        System.out.println("Deleted pawns");
-
-        List<Position> movesAfter = whiteBishop.getPossibleMoves(board);
-
-        if (movesAfter == null){
-            System.out.println("No moves available");
+        try (FileWriter file = new FileWriter("accounts.json")) {
+            file.write(usersList.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        else{
-            for (Position move : movesAfter) {
-                System.out.println(move);
+
+        JSONArray gamesList = new JSONArray();
+
+        for (Game g : games.values()) {
+            JSONObject gameObj = new JSONObject();
+            gameObj.put("id", g.getId());
+            gameObj.put("currentPlayerColor", g.getCurrentPlayer().getColor().toString());
+
+            JSONArray playersArr = new JSONArray();
+            gameObj.put("players", playersArr);
+
+            JSONArray boardArr = new JSONArray();
+            gameObj.put("board", boardArr);
+
+            JSONArray movesArr = new JSONArray();
+            gameObj.put("moves", movesArr);
+
+            gamesList.add(gameObj);
+        }
+
+        try (FileWriter file = new FileWriter("games.json")) {
+            file.write(gamesList.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Data saved successfully!");
+    }
+
+    public User login(String email, String password){
+        for(User user : users){
+            if(user.getEmail().equals(email) && user.getPassword().equals(password)){
+                this.currentUser = user;
+                return user;
             }
         }
+        return null;
+    }
 
+    public User newAccount(String email, String password){
+        User user = new User(email, password);
+        users.add(user);
+        currentUser = user;
+        return user;
+    }
 
+    public void run(){
+        boolean isRunning = true;
+
+        System.out.println("Welcome to the chess!");
+
+        while(isRunning){
+
+            if (currentUser == null){
+                System.out.println("\n--- LOGIN MENU ---");
+                System.out.println("1. Login");
+                System.out.println("2. Register (New Account)");
+                System.out.println("3. Exit");
+                System.out.print("Choose: ");
+            }
+
+            String choice = sc.nextLine();
+
+        }
+    }
+
+    public static void main(String[] args){
+        Board board = new Board();
+        board.initialize();
 
     }
 }
