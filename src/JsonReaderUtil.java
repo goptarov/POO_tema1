@@ -1,7 +1,13 @@
+import game.*;
+import board.Board;
+import board.ChessPair;
+import board.Colors;
+import board.Position;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import pieces.*;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -38,7 +44,7 @@ public final class JsonReaderUtil {
      * @throws IOException    if I/O fails
      * @throws ParseException if JSON is invalid
      */
-    public static List<Account> readAccounts(Path path) throws IOException, ParseException {
+    public static List<User> readUsers(Path path, Map<Integer, Game> allGames) throws IOException, ParseException {
         if (path == null || !Files.exists(path)) {
             return new ArrayList<>();
         }
@@ -46,7 +52,7 @@ public final class JsonReaderUtil {
             JSONParser parser = new JSONParser();
             Object root = parser.parse(reader);
             JSONArray arr = asArray(root);
-            List<Account> result = new ArrayList<>();
+            List<User> result = new ArrayList<>();
 
             if (arr == null) {
                 return result;
@@ -58,19 +64,21 @@ public final class JsonReaderUtil {
                     continue;
                 }
 
-                Account acc = new Account();
-                acc.setEmail(asString(obj.get("email")));
-                acc.setPassword(asString(obj.get("password")));
-                acc.setPoints(asInt(obj.get("points"), 0));
-                List<Integer> gameIds = new ArrayList<>();
-                JSONArray games = asArray(obj.get("games"));
-                if (games != null) {
-                    for (Object gid : games) {
-                        gameIds.add(asInt(gid, 0));
+                User user = new User(asString(obj.get("email")), asString(obj.get("password")));
+                user.setPoints(asInt(obj.get("points"), 0));
+                JSONArray gamesArr = asArray(obj.get("games"));
+                if (gamesArr != null) {
+                    for (Object gid : gamesArr) {
+                        int gameId = asInt(gid, -1);
+
+                        Game game = allGames.get(gameId);
+
+                        if (game != null) {
+                            user.addGame(game);
+                        }
                     }
                 }
-                acc.setGames(gameIds);
-                result.add(acc);
+                result.add(user);
             }
             return result;
         }
@@ -85,8 +93,8 @@ public final class JsonReaderUtil {
      * @throws IOException    if I/O fails
      * @throws ParseException if JSON is invalid
      */
-    public static Map<Long, Game> readGamesAsMap(Path path) throws IOException, ParseException {
-        Map<Long, Game> map = new HashMap<>();
+    public static Map<Integer, Game> readGamesAsMap(Path path) throws IOException, ParseException {
+        Map<Integer, Game> map = new HashMap<>();
         if (path == null || !Files.exists(path)) {
             return map;
         }
@@ -100,36 +108,15 @@ public final class JsonReaderUtil {
                 if (obj == null) {
                     continue;
                 }
-                long id = asLong(obj.get("id"), -1);
+                int id = asInt(obj.get("id"), -1);
                 if (id < 0) {
                     continue;
                 }// skip invalid
-                Game g = new Game();
-                g.setId(id);
 
-                // players array
-                JSONArray playersArr = asArray(obj.get("players"));
-                if (playersArr != null) {
-                    List<Player> players = new ArrayList<>();
-                    for (Object pItem : playersArr) {
-                        JSONObject pObj = asObject(pItem);
-                        if (pObj == null) {
-                            continue;
-                        }
-                        String email = asString(pObj.get("email"));
-                        String color = asString(pObj.get("color"));
-                        players.add(new Player(email, color));
-                    }
-                    g.setPlayers(players);
-                }
-
-                // currentPlayerColor
-                g.setCurrentPlayerColor(asString(obj.get("currentPlayerColor")));
-
+                Board board = new Board();
                 // board array
                 JSONArray boardArr = asArray(obj.get("board"));
                 if (boardArr != null) {
-                    List<Piece> board = new ArrayList<>();
                     for (Object bItem : boardArr) {
                         JSONObject bObj = asObject(bItem);
                         if (bObj == null) {
@@ -137,29 +124,55 @@ public final class JsonReaderUtil {
                         }
 
                         String type = asString(bObj.get("type"));
-                        String color = asString(bObj.get("color"));
+                        Colors color = asColor(bObj.get("color"));
                         String position = asString(bObj.get("position"));
-                        board.add(new Piece(type, color, position));
+                        Position pos = parsePositionString(position);
+
+                        Piece piece = null;
+                        piece = createPiece(type, color, pos);
+
+                        if (piece != null) board.pieces.add(new ChessPair<>(piece.getPosition(), piece));
                     }
-                    g.setBoard(board);
                 }
+                // players array
+                JSONArray playersArr = asArray(obj.get("players"));
+                List<Player> players = new ArrayList<>();
+                if (playersArr != null) {
+                    for (Object pItem : playersArr) {
+                        JSONObject pObj = asObject(pItem);
+                        String email = asString(pObj.get("email"));
+                        Colors color = asColor(pObj.get("color"));
+                        players.add(new Player(email, color));
+                    }
+                }
+
+                Game g = new Game(id, players.get(0), players.get(1), board);
+
+                Colors currColor = asColor(obj.get("currentPlayerColor"));
+                g.setCurrentPlayerColor(currColor);
 
                 // Parse optional moves array
                 JSONArray movesArr = asArray(obj.get("moves"));
                 if (movesArr != null) {
-                    List<Move> moves = new ArrayList<>();
                     for (Object mItem : movesArr) {
                         JSONObject mObj = asObject(mItem);
-                        if (mObj == null) {
-                            continue;
-                        }
-
-                        String playerColor = asString(mObj.get("playerColor"));
+                        Colors pColor = asColor(mObj.get("playerColor"));
                         String from = asString(mObj.get("from"));
                         String to = asString(mObj.get("to"));
-                        moves.add(new Move(playerColor, from, to));
+
+                        JSONObject capObj = asObject(mObj.get("captured"));
+                        Piece captured = null;
+                        if (capObj != null) {
+                            String cType = asString(capObj.get("type"));
+                            Colors cColor = asColor(capObj.get("color"));
+                            captured = createPiece(cType, cColor, parsePositionString(to));
+                        }
+
+                        if (pColor == players.get(0).getColor())
+                            g.addMove(players.get(0), parsePositionString(from), parsePositionString(to), captured);
+                        if (pColor == players.get(1).getColor())
+                            g.addMove(players.get(1), parsePositionString(from), parsePositionString(to), captured);
                     }
-                    g.setMoves(moves);
                 }
                 map.put(id, g);
             }
@@ -168,6 +181,12 @@ public final class JsonReaderUtil {
     }
 
     // -------- helper converters --------
+
+    private static Colors asColor(Object o) {
+        if (String.valueOf(o).equals("WHITE")) return Colors.WHITE;
+        if (String.valueOf(o).equals("BLACK")) return Colors.BLACK;
+        return null;
+    }
 
     private static JSONArray asArray(Object o) {
         return (o instanceof JSONArray) ? (JSONArray) o : null;
@@ -197,5 +216,22 @@ public final class JsonReaderUtil {
         } catch (NumberFormatException e) {
             return def;
         }
+    }
+
+    private static Piece createPiece(String type, Colors color, Position pos) {
+        return switch (type) {
+            case "K" -> new King(color, pos);
+            case "Q" -> new Queen(color, pos);
+            case "R" -> new Rook(color, pos);
+            case "B" -> new Bishop(color, pos);
+            case "N" -> new Knight(color, pos);
+            case "P" -> new Pawn(color, pos);
+            default -> null;
+        };
+    }
+
+    private static Position parsePositionString(String s) {
+        if (s == null || s.length() < 2) return new Position('A', 1);
+        return new Position(s.charAt(0), Character.getNumericValue(s.charAt(1)));
     }
 }

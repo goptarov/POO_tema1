@@ -5,9 +5,8 @@ import pieces.Piece;
 
 public class ChessPair<K extends Comparable<K>, V> implements Comparable<ChessPair<K,V>>{
 
-    Position key;
-    Piece value;
-
+    private Position key;
+    private Piece value;
 
     public ChessPair(Position key, Piece value) {
         this.key = key;

@@ -1,6 +1,7 @@
 package pieces;
 
 import board.Board;
+import board.ChessPair;
 import board.Colors;
 import board.Position;
 
@@ -28,15 +29,18 @@ public abstract class Piece implements ChessPiece{
     }
 
     void addMove(Board board, List<Position> moves, Position pos, int[] metAPiece, int x){
-        if (board.isValidCoordinate(pos) && metAPiece[x] == 0){
+        if (metAPiece[x] == 1)
+            return;
+        if (board.isValidCoordinate(pos)) {
             if (board.getPieceAt(pos) == null) //move
                 moves.add(pos);
             else{
+                metAPiece[x] = 1;
                 if (board.getPieceAt(pos).getColor() != this.getColor()) //capture
                     moves.add(pos);
-                metAPiece[x] = 1;
             }
         }
+        else metAPiece[x] = 1;
     }
 
     void addKingMove(Board board, List<Position> moves, Position pos){
@@ -50,11 +54,12 @@ public abstract class Piece implements ChessPiece{
 
     @Override
     public boolean checkForCheck(Board board, Position kingPosition) {
-        List<Position> possibleMoves = this.getPossibleMoves(board);
-
-        for (Position possibleMove : possibleMoves) {
-            if (possibleMove.equals(kingPosition)) {
-                return true;
+        if (!(board.getPieceAt(kingPosition) instanceof King))
+            return false;
+        if (this.getColor() != board.getPieceAt(kingPosition).getColor()){
+            for (Position move : this.getPossibleMoves(board)) {
+                if (board.isValidMove(this.pos, move) && move.equals(kingPosition))
+                    return true;
             }
         }
         return false;

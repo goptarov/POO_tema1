@@ -4,7 +4,6 @@ import board.Board;
 import board.Colors;
 import board.Position;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +21,9 @@ public class Pawn extends Piece {
         int y = currentPos.getY();
 
         int direction = 0;
-        if (this.getColor() == Colors.White)
+        if (this.getColor() == Colors.WHITE)
             direction = 1;
-        if (this.getColor() == Colors.Black){
+        if (this.getColor() == Colors.BLACK){
             direction = -1;
         }
 
@@ -35,7 +34,7 @@ public class Pawn extends Piece {
             moves.add(forwardOne);
 
             boolean isFirstMove = false;
-            if ((this.getColor() == Colors.White && y == 2) || (this.getColor() == Colors.Black && y == 7)) {
+            if ((this.getColor() == Colors.WHITE && y == 2) || (this.getColor() == Colors.BLACK && y == 7)) {
                 isFirstMove = true;
             }
             if (isFirstMove) {
