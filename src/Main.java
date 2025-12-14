@@ -1,7 +1,7 @@
-import Game.Game;
-import Game.User;
+import board.Colors;
+import game.Game;
+import game.User;
 import board.Board;
-import board.Position;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -103,22 +103,81 @@ public class Main{
 
         while(isRunning){
 
-            if (currentUser == null){
-                System.out.println("\n--- LOGIN MENU ---");
+            while (currentUser == null && isRunning){
+                System.out.println("--- LOGIN MENU ---");
                 System.out.println("1. Login");
                 System.out.println("2. Register (New Account)");
                 System.out.println("3. Exit");
                 System.out.print("Choose: ");
+
+                String choice = sc.nextLine();
+                String email;
+                String password;
+
+                if (choice.equals("1")){
+                    while (currentUser == null) {
+                        System.out.print("Enter email: ");
+                        email = sc.nextLine();
+                        System.out.print("Enter password: ");
+                        password = sc.nextLine();
+                        currentUser = login(email, password);
+                    }
+                }
+                else if (choice.equals("2")){
+                    System.out.print("Enter email: ");
+                    email = sc.nextLine();
+                    System.out.print("Enter password: ");
+                    password = sc.nextLine();
+                    newAccount(email, password);
+                }
+                else if (choice.equals("3")){
+                    isRunning = false;
+                    break;
+                }
+                else{
+                    System.out.println("Invalid choice!");
+                }
             }
 
+            System.out.println("--- PLAY MENU ---");
+            System.out.println("1. New Game");
+            System.out.println("2. Load Game");
+            System.out.println("3. Log Out");
+            System.out.print("Choose: ");
+
             String choice = sc.nextLine();
+            if (choice.equals("1")){
+
+            }
 
         }
     }
 
+    private void printBoard(Board board) {
+        System.out.println("   A  B  C  D  E  F  G  H");
+        for (int row = 8; row >= 1; row--) {
+            System.out.print(row + " ");
+            for (char col = 'A'; col <= 'H'; col++) {
+                Piece p = board.getPieceAt(new board.Position(col, row));
+                if (p == null) {
+                    System.out.print(" . ");
+                } else {
+                    // Example: K-W (King White)
+                    char type = p.type();
+                    char color = (p.getColor() == Colors.WHITE) ? 'W' : 'B';
+                    System.out.print(type + "-" + color + " ");
+                }
+            }
+            System.out.println(" " + row);
+        }
+        System.out.println("   A  B  C  D  E  F  G  H");
+    }
+
     public static void main(String[] args){
         Board board = new Board();
-        board.initialize();
+
+        Main app = new Main();
+        app.run();
 
     }
 }

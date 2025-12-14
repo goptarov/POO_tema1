@@ -1,4 +1,4 @@
-import Game.*;
+import game.*;
 import board.Board;
 import board.ChessPair;
 import board.Colors;

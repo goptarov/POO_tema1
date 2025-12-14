@@ -1,11 +1,8 @@
-package Game;
+package game;
 
 import board.Colors;
 import board.Position;
 import pieces.Piece;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Move {
     private Colors color;
