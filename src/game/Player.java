@@ -41,10 +41,10 @@ public class Player {
 
         if (target != null) {
             captured.add(target);
-            if (target instanceof Queen) setPoints(this.points + 9);
-            if (target instanceof Rook) setPoints(this.points + 5);
-            if (target instanceof Bishop || target instanceof Knight) setPoints(this.points + 3);
-            if (target instanceof Pawn) setPoints(this.points + 1);
+            if (target instanceof Queen) setPoints(this.points + 90);
+            if (target instanceof Rook) setPoints(this.points + 50);
+            if (target instanceof Bishop || target instanceof Knight) setPoints(this.points + 30);
+            if (target instanceof Pawn) setPoints(this.points + 10);
         }
     }
 

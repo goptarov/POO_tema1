@@ -62,16 +62,10 @@ public class Main{
         for (Game g : games.values()) {
             JSONObject gameObj = new JSONObject();
 
-            // FIX 1: Add the Game ID
             gameObj.put("id", g.getId());
-
-            // FIX 2: Add Current Player Color
             gameObj.put("currentPlayerColor", g.getCurrentPlayer().getColor().toString());
 
-            // FIX 3: Add Players Array
             JSONArray playersArr = new JSONArray();
-            // Assuming g.getPlayers() returns List<Player>.
-            // If you don't have that getter, you might need to use g.getWhitePlayer() / g.getBlackPlayer()
             for (Player p : g.getPlayers()) {
                 JSONObject pObj = new JSONObject();
                 pObj.put("email", p.getName() != null ? p.getName() : p.getName());
@@ -80,7 +74,6 @@ public class Main{
             }
             gameObj.put("players", playersArr);
 
-            // --- Board Array (Existing logic) ---
             JSONArray boardArr = new JSONArray();
             for (ChessPair<Position, Piece> pair : g.getBoard().pieces) {
                 JSONObject pieceObj = new JSONObject();
@@ -94,7 +87,6 @@ public class Main{
             }
             gameObj.put("board", boardArr);
 
-            // --- Moves Array (Existing logic) ---
             JSONArray movesArr = new JSONArray();
             for (game.Move m : g.getMoves()) {
                 JSONObject moveObj = new JSONObject();
@@ -112,7 +104,6 @@ public class Main{
             }
             gameObj.put("moves", movesArr);
 
-            // FIX 4: CRITICAL - Add the constructed object to the list!
             gamesList.add(gameObj);
         }
 
@@ -235,6 +226,7 @@ public class Main{
                         List<Game> activeGames = currentUser.getActiveGames();
                         if (activeGames.isEmpty()) {
                             System.out.println("You have no active games!");
+                            break;
                         }
 
                         System.out.println("Choose which game to load:");
@@ -278,14 +270,19 @@ public class Main{
         boolean playing = true;
 
         while(playing) {
-            printBoard(game.getBoard());
 
             Player currentPlayer = game.getCurrentPlayer();
+            printBoard(game.getBoard(), currentPlayer.getColor());
             System.out.println(currentPlayer.getColor() + "'s turn");
 
             if(game.checkForCheckMate()) {
                 System.out.println("Checkmate! Game over");
+                currentPlayer.setPoints(currentPlayer.getPoints() - 300);
+                game.switchPlayer();
+                currentPlayer = game.getCurrentPlayer();
+                currentPlayer.setPoints(currentPlayer.getPoints() + 300);
                 currentUser.removeGame(game);
+
                 playing = false;
                 break;
             }
@@ -323,10 +320,13 @@ public class Main{
                     break;
                 }
                 else if(input.equalsIgnoreCase("resign")){
-                    playing = false;
                     currentUser.setPoints(currentUser.getPoints() + currentPlayer.getPoints() - 150);
+                    game.switchPlayer();
+                    currentUser.setPoints(currentPlayer.getPoints() + 150);
                     System.out.println("You reisgned and lost 150 points!");
                     currentUser.removeGame(game);
+                    playing = false;
+                    break;
                 }
                 else if (input.contains("-")){
                     String[] parts = input.split("-");
@@ -378,23 +378,42 @@ public class Main{
         }
     }
 
-    private void printBoard(Board board) {
-        for (int row = 8; row >= 1; row--) {
-            System.out.print(row + " ");
-            for (char col = 'A'; col <= 'H'; col++) {
-                Piece p = board.getPieceAt(new Position(col, row));
-                if (p == null) {
-                    System.out.print(" .. ");
-                } else {
-                    // Example: K-W (King White)
-                    char type = p.type();
-                    char color = (p.getColor() == Colors.WHITE) ? 'W' : 'B';
-                    System.out.print(type + "-" + color + " ");
+    private void printBoard(Board board, Colors perspective) {
+        if (perspective == Colors.WHITE) {
+            for (int row = 8; row >= 1; row--) {
+                System.out.print(row + " ");
+                for (char col = 'A'; col <= 'H'; col++) {
+                    Piece p = board.getPieceAt(new Position(col, row));
+                    if (p == null) {
+                        System.out.print(" .. ");
+                    } else {
+                        char type = p.type();
+                        char color = (p.getColor() == Colors.WHITE) ? 'W' : 'B';
+                        System.out.print(type + "-" + color + " ");
+                    }
                 }
+                System.out.println();
             }
-            System.out.println();
+            System.out.println("   A   B   C   D   E   F   G   H");
         }
-        System.out.println("   A   B   C   D   E   F   G   H");
+        else if (perspective == Colors.BLACK) {
+            System.out.println("   H   G   F   E   D   C   B   A");
+            for (int row = 1; row <= 8; row++) {
+                System.out.print(row + " ");
+                for (char col = 'H'; col >= 'A'; col--) { // Iterate backwards H -> A
+                    Piece p = board.getPieceAt(new Position(col, row));
+                    if (p == null) {
+                        System.out.print(" .. ");
+                    } else {
+                        char type = p.type();
+                        char color = (p.getColor() == Colors.BLACK) ? 'B' : 'W';
+                        System.out.print(type + "-" + color + " ");
+                    }
+                }
+                System.out.println(" " + row);
+            }
+            System.out.println("   H   G   F   E   D   C   B   A");
+        }
     }
 
     public static void main(String[] args){

@@ -111,7 +111,7 @@ public final class JsonReaderUtil {
                 int id = asInt(obj.get("id"), -1);
                 if (id < 0) {
                     continue;
-                }// skip invalid
+                }
 
                 Board board = new Board();
                 // board array
@@ -134,7 +134,6 @@ public final class JsonReaderUtil {
                         if (piece != null) board.pieces.add(new ChessPair<>(piece.getPosition(), piece));
                     }
                 }
-                // players array
                 JSONArray playersArr = asArray(obj.get("players"));
                 List<Player> players = new ArrayList<>();
                 if (playersArr != null) {
@@ -151,7 +150,6 @@ public final class JsonReaderUtil {
                 Colors currColor = asColor(obj.get("currentPlayerColor"));
                 g.setCurrentPlayerColor(currColor);
 
-                // Parse optional moves array
                 JSONArray movesArr = asArray(obj.get("moves"));
                 if (movesArr != null) {
                     for (Object mItem : movesArr) {
