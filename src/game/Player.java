@@ -24,8 +24,8 @@ public class Player {
         this.points = 0;
     }
 
-    public void makeMove(Position from, Position to, Board board) throws InvalidMoveException, InvalidCommandException {
-
+    public void recordCapture(Piece target) {
+        /*
         if (!board.isValidCoordinate(from) || !board.isValidCoordinate(to)) {
             throw new InvalidCommandException("Invalid coordinates");
         }
@@ -35,17 +35,14 @@ public class Player {
         if (board.getPieceAt(from).getColor() != this.color) {
             throw new InvalidMoveException("This is not your piece!");
         }
+        */
+        if (target == null) return;
+        captured.add(target);
 
-        Piece target = board.getPieceAt(to);
-        board.movePiece(from, to);
-
-        if (target != null) {
-            captured.add(target);
-            if (target instanceof Queen) setPoints(this.points + 90);
-            if (target instanceof Rook) setPoints(this.points + 50);
-            if (target instanceof Bishop || target instanceof Knight) setPoints(this.points + 30);
-            if (target instanceof Pawn) setPoints(this.points + 10);
-        }
+        if (target instanceof Queen) setPoints(this.points + 90);
+        if (target instanceof Rook) setPoints(this.points + 50);
+        if (target instanceof Bishop || target instanceof Knight) setPoints(this.points + 30);
+        if (target instanceof Pawn) setPoints(this.points + 10);
     }
 
     public List<ChessPair<Position, Piece>> getOwnedPieces(Board board) {return board.getPiecesByColor(this.color);

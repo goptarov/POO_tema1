@@ -4,6 +4,8 @@ import board.Board;
 import board.ChessPair;
 import board.Colors;
 import board.Position;
+import exceptions.InvalidCommandException;
+import exceptions.InvalidMoveException;
 import pieces.King;
 import pieces.Piece;
 
@@ -33,11 +35,9 @@ public class Game {
         playerIndex = 0;
     }
 
-
     public void resume(){
         System.out.println("Resuming game " + this.id);
     }
-
 
     public void switchPlayer(){
         playerIndex = 1 - playerIndex;
@@ -114,6 +114,22 @@ public class Game {
     public void addMove(Player player, Position from, Position to, Piece captured){
         Move move = new Move(player.color, from, to, captured);
         moves.add(move);
+    }
+
+    public void executeMove(Position from, Position to) throws InvalidMoveException, InvalidCommandException {
+        if (!board.isValidCoordinate(from) || !board.isValidCoordinate(to))
+            throw new InvalidCommandException("Invalid move command");
+        Piece movingPiece = board.getPieceAt(from);
+        if (movingPiece == null || movingPiece.getColor() != getCurrentPlayer().getColor())
+            throw new InvalidMoveException("Invalid piece selected");
+        if (!board.isValidMove(from, to))
+            throw new InvalidMoveException("Illegal move.");
+
+        Piece capturedPiece = board.getPieceAt(to);
+        board.movePiece(from, to);
+
+        getCurrentPlayer().recordCapture(capturedPiece);
+        addMove(getCurrentPlayer(), from, to, capturedPiece);
     }
 
     public List<Move> getMoves(){

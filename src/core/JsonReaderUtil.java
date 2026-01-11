@@ -1,3 +1,5 @@
+package core;
+
 import game.*;
 import board.Board;
 import board.ChessPair;

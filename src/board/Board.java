@@ -53,12 +53,12 @@ public class Board {
         Position blackBishop2 = new Position('F', 8);
     }
 
-    public void movePiece(Position from, Position to) throws InvalidMoveException {
-        if (!isValidCoordinate(from) || !isValidCoordinate(to))
-            throw new InvalidMoveException("Move is out of bounds.");
+    public void movePiece(Position from, Position to) {
+        //if (!isValidCoordinate(from) || !isValidCoordinate(to))
+        //    throw new InvalidMoveException("Move is out of bounds.");
 
         Piece piece = getPieceAt(from);
-        if (piece == null)
+        /*if (piece == null)
             throw new InvalidMoveException("No piece at starting position.");
 
         if (!isValidMove(from, to))
@@ -66,7 +66,8 @@ public class Board {
 
         if (getPieceAt(to) != null)
             pieces.removeIf(pair -> pair.getKey().equals(to));
-
+        */
+        pieces.removeIf(pair -> pair.getKey().equals(to));
         pieces.removeIf(pair -> pair.getKey().equals(from));
         piece.setPosition(to);
         pieces.add(new ChessPair<>(to, piece));
@@ -92,7 +93,7 @@ public class Board {
         if (piece.getPossibleMoves(this) == null || !piece.getPossibleMoves(this).contains(to))
             return false;
 
-        //Simulating the move to check if through this move the king is left in check.
+        //Simulating the move to check if through it the king is left in check.
         boolean isValid = true;
 
         pieces.removeIf(pair -> pair.getKey().equals(from)); //remove piece that we move
@@ -102,7 +103,6 @@ public class Board {
 
         piece.setPosition(to);
         pieces.add(new ChessPair<>(to, piece)); //add the initial piece to the moved position
-
 
         for (ChessPair<Position, Piece> pair : pieces) {
 

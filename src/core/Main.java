@@ -1,8 +1,11 @@
+package core;
+
 import board.ChessPair;
 import board.Colors;
 import board.Position;
 import exceptions.InvalidCommandException;
 import exceptions.InvalidMoveException;
+import GUI.AppWindow;
 import game.Game;
 import game.Player;
 import game.User;
@@ -18,11 +21,24 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Main{
-    List<User> users = new ArrayList<>();
-    Map<Integer, Game> games = new HashMap<>();
-    User currentUser;
-    Scanner sc = new Scanner(System.in);
-    Random rand = new Random();
+    private List<User> users = new ArrayList<>();
+    private Map<Integer, Game> games = new HashMap<>();
+    private User currentUser;
+    private Scanner sc = new Scanner(System.in);
+    private Game currentGame;
+
+    //Singleton logic
+    private static Main instance;
+
+    private Main(){
+        read();
+    }
+
+    public static Main getInstance(){ //initializam doar atunci cand e ceruta instanta. (Lazy initialization)
+        if (instance == null)
+            instance = new Main();
+        return instance;
+    }
 
     public void read(){
         try {
@@ -305,11 +321,9 @@ public class Main{
                 Position from = selectedMove.getKey();
                 Position to = selectedMove.getValue();
                 try{
-                    Piece captured = game.getBoard().getPieceAt(to);
                     System.out.println("Computer moves " + from + "-" + to);
-                    computer.makeMove(from, to, game.getBoard());
-                    game.addMove(computer, from, to, captured);
-                } catch(InvalidMoveException e){
+                    game.executeMove(from, to);
+                } catch(InvalidMoveException | InvalidCommandException e){
                     System.out.println(e.getMessage());
                 }
             }
@@ -340,10 +354,7 @@ public class Main{
                             System.out.println("That is not your piece!");
                             continue;
                         }
-
-                        Piece captured = game.getBoard().getPieceAt(to);
-                        currentPlayer.makeMove(from, to, game.getBoard());
-                        game.addMove(currentPlayer, from, to, captured);
+                        game.executeMove(from, to);
                     } catch (InvalidCommandException | InvalidMoveException e) {
                         System.out.println(e.getMessage());
                     }
@@ -365,9 +376,7 @@ public class Main{
 
                         String toAsString = sc.nextLine().trim();
                         Position to = new Position(toAsString.charAt(0), Character.getNumericValue(toAsString.charAt(1)));
-                        Piece captured = game.getBoard().getPieceAt(to);
-                        currentPlayer.makeMove(from, to, game.getBoard());
-                        game.addMove(currentPlayer, from, to, captured);
+                        game.executeMove(from, to);
                     }catch (InvalidCommandException | InvalidMoveException e) {
                         System.out.println(e.getMessage());
                     }
@@ -416,11 +425,38 @@ public class Main{
         }
     }
 
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User currentUser) {
+        this.currentUser = currentUser;
+    }
+
+    public Map<Integer, Game> getGames() {
+        return games;
+    }
+
+    public Game getCurrentGame() {
+        return currentGame;
+    }
+
+    public void setCurrentGame(Game currentGame) {
+        this.currentGame = currentGame;
+    }
+
+    public void addGame(Game game) {
+        this.games.put(game.getId(), game);
+    }
+
     public static void main(String[] args){
         Board board = new Board();
-
-        Main app = new Main();
+        /*
+        core.Main app = new core.Main();
         app.run();
+        */
+        Main.getInstance();
 
+        AppWindow game = new AppWindow();
     }
 }
