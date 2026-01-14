@@ -12,6 +12,6 @@ public class Bishop extends Piece {
 
     @Override
     public char type() {
-        return 'B';
+        return '\u265D';
     }
 }

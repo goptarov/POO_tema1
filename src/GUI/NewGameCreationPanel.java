@@ -7,6 +7,7 @@ import game.Game;
 import game.Player;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -19,6 +20,7 @@ public class NewGameCreationPanel extends JPanel implements ActionListener {
     public NewGameCreationPanel(AppWindow parent) {
         this.parent = parent;
 
+        this.setBackground(new Color(40, 58, 55));
         startGame.addActionListener(this);
 
         humanColor.addItem(Colors.WHITE);
@@ -42,6 +44,7 @@ public class NewGameCreationPanel extends JPanel implements ActionListener {
         if (human.getColor() == Colors.BLACK)
             newGame = new Game(newGameID, computer, human, new Board());
 
+        newGame.start();
         Main.getInstance().getCurrentUser().addGame(newGame);
         Main.getInstance().addGame(newGame);
         Main.getInstance().setCurrentGame(newGame);

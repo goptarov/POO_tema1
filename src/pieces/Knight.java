@@ -12,6 +12,6 @@ public class Knight extends Piece {
 
     @Override
     public char type() {
-        return 'N';
+        return '\u265E';
     }
 }

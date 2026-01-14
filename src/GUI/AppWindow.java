@@ -3,6 +3,7 @@ package GUI;
 import game.Game;
 import game.Move;
 import game.Player;
+import game.User;
 import pieces.Piece;
 
 import javax.swing.*;
@@ -13,19 +14,11 @@ import core.Main;
 
 public class AppWindow extends JFrame implements GameObserver {
     private MainPanel mainPanel = new MainPanel(this);
-    private LoginPanel loginPanel = new LoginPanel(this);
-    private GameMenuPanel gameMenuPanel = new GameMenuPanel(this);
-    private NewGameCreationPanel newGameCreationPanel = new NewGameCreationPanel(this);
-    private LoadGamePanel loadGamePanel;
-    private CreateAccPanel createAccPanel = new CreateAccPanel(this);
-    private GamePanel gamePanel = new GamePanel(this);
 
     public AppWindow(){
         super("Chess game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(400, 300));
-        getContentPane().setBackground(Color.darkGray);
-        //setLayout(new SpringLayout());
         getContentPane().add(mainPanel);
         setVisible(true);
     }
@@ -38,29 +31,57 @@ public class AppWindow extends JFrame implements GameObserver {
             case "LOGIN": this.getContentPane().add(new LoginPanel(this)); break;
 
             case "CREATE_ACCOUNT":
-                //create new account, add it to Main's users list
-                this.getContentPane().add(new CreateAccPanel(this));
-                break;
+                this.getContentPane().add(new CreateAccPanel(this)); break;
 
             case "GAME_MENU":
-                this.getContentPane().add(new  GameMenuPanel(this)); break;
+                this.getContentPane().add(new GameMenuPanel(this)); break;
 
             case "NEW_GAME":
-                this.getContentPane().add(new NewGameCreationPanel(this));
-                //create new game, add it to Main's games list
-                break;
+                this.getContentPane().add(new NewGameCreationPanel(this)); break;
 
             case "LOAD_GAME":
-                this.getContentPane().add(new LoadGamePanel(this));
+                this.getContentPane().add(new LoadGamePanel(this)); break;
+
+            case "GAME":
+                JPanel container = new JPanel(new BorderLayout());
+
+                GameInfoBar gameInfoBar = new GameInfoBar();
+
+                container.add(gameInfoBar, BorderLayout.NORTH);
+                container.add(new GameControlsBar(this), BorderLayout.SOUTH);
+                container.add(new GamePanel(this, gameInfoBar), BorderLayout.CENTER);
+                this.getContentPane().add(container);
                 break;
 
+            case "GAME_END":
+                this.getContentPane().add(new GameEndPanel(this)); break;
         }
         this.revalidate();
         this.repaint();
     }
-    public void showPanel(String newPanel, int x){} //is this needed?
 
-    void onMovePiece(Move move){}
-    void onPieceCaptured(Piece piece){}
-    void onPlayerSwitch(Player currentPlayer){}
+
+    public void onMovePiece(GameInfoBar gameInfoBar, Move move){
+        Game currGame = Main.getInstance().getCurrentGame();
+        User currUser = Main.getInstance().getCurrentUser();
+        gameInfoBar.update(move);
+
+        if (currGame.checkForCheckMate()) {
+            if (currGame.getCurrentPlayer().getName().equals("Computer")){
+                currGame.switchPlayer(); //switch ca sa pot accesa punctele playerului om temporar.
+                currUser.setPoints(currUser.getPoints() + 300 + currGame.getCurrentPlayer().getPoints());
+                currGame.switchPlayer();
+            }
+            else{
+                currUser.setPoints(currUser.getPoints() + currGame.getCurrentPlayer().getPoints() - 300);
+            }
+            this.showPanel("GAME_END");
+        }
+
+        this.revalidate();
+        this.repaint();
+    }
+    public void onPlayerSwitch(){
+        Main.getInstance().getCurrentGame().switchPlayer();
+    }
 }

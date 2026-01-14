@@ -1,5 +1,7 @@
 package GUI;
 
+import core.Main;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,13 +15,18 @@ public class GameMenuPanel extends JPanel implements ActionListener {
     public GameMenuPanel(AppWindow parent) {
         this.parent = parent;
 
-        newGameButton.setBackground(Color.GRAY);
+        this.setBackground(new Color(40, 58, 55));
+
+        newGameButton.setBackground(new Color(160, 100, 70));
+        newGameButton.setForeground(Color.WHITE);
         newGameButton.addActionListener(this);
 
-        loadGameButton.setBackground(Color.GRAY);
+        loadGameButton.setBackground(new Color(160, 100, 70));
+        loadGameButton.setForeground(Color.WHITE);
         loadGameButton.addActionListener(this);
 
-        exitButton.setBackground(Color.GRAY);
+        exitButton.setBackground(new Color(160, 100, 70));
+        exitButton.setForeground(Color.WHITE);
         exitButton.addActionListener(this);
 
         this.add(newGameButton);
@@ -33,9 +40,10 @@ public class GameMenuPanel extends JPanel implements ActionListener {
             parent.showPanel("NEW_GAME");
         }
         if (e.getSource().equals(loadGameButton)){
-            parent.showPanel("CHOOSE_GAME_LOAD");
+            parent.showPanel("LOAD_GAME");
         }
         if (e.getSource().equals(exitButton)){
+            Main.getInstance().write();
             System.exit(0);
         }
     }

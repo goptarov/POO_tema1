@@ -130,10 +130,9 @@ public final class JsonReaderUtil {
                         String position = asString(bObj.get("position"));
                         Position pos = parsePositionString(position);
 
-                        Piece piece = null;
-                        piece = createPiece(type, color, pos);
+                        Piece piece = PieceFactory.createPiece(type, color, pos);
 
-                        if (piece != null) board.pieces.add(new ChessPair<>(piece.getPosition(), piece));
+                        board.pieces.add(new ChessPair<>(piece.getPosition(), piece));
                     }
                 }
                 JSONArray playersArr = asArray(obj.get("players"));
@@ -163,9 +162,9 @@ public final class JsonReaderUtil {
                         JSONObject capObj = asObject(mObj.get("captured"));
                         Piece captured = null;
                         if (capObj != null) {
-                            String cType = asString(capObj.get("type"));
-                            Colors cColor = asColor(capObj.get("color"));
-                            captured = createPiece(cType, cColor, parsePositionString(to));
+                            String capType = asString(capObj.get("type"));
+                            Colors capColor = asColor(capObj.get("color"));
+                            captured = PieceFactory.createPiece(capType, capColor, parsePositionString(to));
                         }
 
                         if (pColor == players.get(0).getColor())
@@ -216,18 +215,6 @@ public final class JsonReaderUtil {
         } catch (NumberFormatException e) {
             return def;
         }
-    }
-
-    private static Piece createPiece(String type, Colors color, Position pos) {
-        return switch (type) {
-            case "K" -> new King(color, pos);
-            case "Q" -> new Queen(color, pos);
-            case "R" -> new Rook(color, pos);
-            case "B" -> new Bishop(color, pos);
-            case "N" -> new Knight(color, pos);
-            case "P" -> new Pawn(color, pos);
-            default -> null;
-        };
     }
 
     private static Position parsePositionString(String s) {

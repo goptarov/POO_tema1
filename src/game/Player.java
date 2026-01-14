@@ -16,7 +16,6 @@ public class Player {
     Colors color;
     private int points;
     private List<Piece> captured = new ArrayList<>();
-    private TreeSet<ChessPair<Position, Piece>> pieces = new TreeSet<>();
 
     public Player(String name, Colors color) {
         this.name = name;
@@ -25,18 +24,8 @@ public class Player {
     }
 
     public void recordCapture(Piece target) {
-        /*
-        if (!board.isValidCoordinate(from) || !board.isValidCoordinate(to)) {
-            throw new InvalidCommandException("Invalid coordinates");
-        }
-        if (board.getPieceAt(from) == null) {
-            throw new InvalidMoveException("No piece at starting position!");
-        }
-        if (board.getPieceAt(from).getColor() != this.color) {
-            throw new InvalidMoveException("This is not your piece!");
-        }
-        */
         if (target == null) return;
+
         captured.add(target);
 
         if (target instanceof Queen) setPoints(this.points + 90);
@@ -45,7 +34,8 @@ public class Player {
         if (target instanceof Pawn) setPoints(this.points + 10);
     }
 
-    public List<ChessPair<Position, Piece>> getOwnedPieces(Board board) {return board.getPiecesByColor(this.color);
+    public List<ChessPair<Position, Piece>> getOwnedPieces(Board board) {
+        return board.getPiecesByColor(this.color);
     }
 
     public Colors getColor(){

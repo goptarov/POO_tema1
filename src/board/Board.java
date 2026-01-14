@@ -18,60 +18,62 @@ public class Board {
             Position whitePiece = new Position(col,1);
             Position blackPiece = new Position(col,8);
 
-            pieces.add(new ChessPair<>(whitePawn, new Pawn(Colors.WHITE, whitePawn)));
-            pieces.add(new ChessPair<>(blackPawn, new Pawn(Colors.BLACK, blackPawn)));
+            pieces.add(new ChessPair<>(whitePawn, PieceFactory.createPiece("P", Colors.WHITE, whitePawn)));
+            pieces.add(new ChessPair<>(blackPawn, PieceFactory.createPiece("P", Colors.BLACK, blackPawn)));
 
             if (col == 'A' || col == 'H'){
-                pieces.add(new ChessPair<>(whitePiece, new Rook(Colors.WHITE, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Rook(Colors.BLACK, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, PieceFactory.createPiece("R", Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, PieceFactory.createPiece("R", Colors.BLACK, blackPiece)));
             }
             if (col == 'B' || col == 'G'){
-                pieces.add(new ChessPair<>(whitePiece, new Knight(Colors.WHITE, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Knight(Colors.BLACK, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, PieceFactory.createPiece("N", Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, PieceFactory.createPiece("N", Colors.BLACK, blackPiece)));
             }
             if (col == 'C' || col == 'F'){
-                pieces.add(new ChessPair<>(whitePiece, new Bishop(Colors.WHITE, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Bishop(Colors.BLACK, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, PieceFactory.createPiece("B", Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, PieceFactory.createPiece("B", Colors.BLACK, blackPiece)));
             }
             if (col == 'D'){
-                pieces.add(new ChessPair<>(whitePiece, new Queen(Colors.WHITE, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new Queen(Colors.BLACK, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, PieceFactory.createPiece("Q", Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, PieceFactory.createPiece("Q", Colors.BLACK, blackPiece)));
             }
             if (col == 'E'){
-                pieces.add(new ChessPair<>(whitePiece, new King(Colors.WHITE, whitePiece)));
-                pieces.add(new ChessPair<>(blackPiece, new King(Colors.BLACK, blackPiece)));
+                pieces.add(new ChessPair<>(whitePiece, PieceFactory.createPiece("K", Colors.WHITE, whitePiece)));
+                pieces.add(new ChessPair<>(blackPiece, PieceFactory.createPiece("K", Colors.BLACK, blackPiece)));
             }
         }
+    }
 
-        Position whiteRook1 = new Position('A', 1);
-        Position blackRook1 = new Position('A', 8);
-        Position whiteRook2 = new Position('H', 1);
-        Position blackRook2 = new Position('H', 8);
-        Position whiteBishop1 = new Position('C', 1);
-        Position blackBishop1 = new Position('C', 8);
-        Position whiteBishop2 = new Position('F', 1);
-        Position blackBishop2 = new Position('F', 8);
+    public void promotePawn(Position pos, String newPieceType){
+        Piece pawn = getPieceAt(pos);
+
+        if (!(pawn instanceof Pawn))
+            return;
+
+        pieces.removeIf(pair -> pair.getKey().equals(pos));
+
+        Piece newPiece = PieceFactory.createPiece(newPieceType, pawn.getColor(), pos);
+
+        pieces.add(new ChessPair<>(pos, newPiece));
+    }
+
+    public boolean needsPromotion(Position pos){
+        if (getPieceAt(pos) instanceof Pawn){
+            if (getPieceAt(pos).getColor() == Colors.WHITE && pos.getY() == 8)
+                return true;
+            if (getPieceAt(pos).getColor() == Colors.BLACK && pos.getY() == 1)
+                return true;
+        }
+        return false;
     }
 
     public void movePiece(Position from, Position to) {
-        //if (!isValidCoordinate(from) || !isValidCoordinate(to))
-        //    throw new InvalidMoveException("Move is out of bounds.");
-
         Piece piece = getPieceAt(from);
-        /*if (piece == null)
-            throw new InvalidMoveException("No piece at starting position.");
 
-        if (!isValidMove(from, to))
-            throw new InvalidMoveException("Illegal move for this piece.");
-
-        if (getPieceAt(to) != null)
-            pieces.removeIf(pair -> pair.getKey().equals(to));
-        */
         pieces.removeIf(pair -> pair.getKey().equals(to));
         pieces.removeIf(pair -> pair.getKey().equals(from));
         piece.setPosition(to);
         pieces.add(new ChessPair<>(to, piece));
-
     }
 
     public Piece getPieceAt(Position position){
@@ -93,7 +95,7 @@ public class Board {
         if (piece.getPossibleMoves(this) == null || !piece.getPossibleMoves(this).contains(to))
             return false;
 
-        //Simulating the move to check if through it the king is left in check.
+        //simulating the move to check if through it the king is left in check.
         boolean isValid = true;
 
         pieces.removeIf(pair -> pair.getKey().equals(from)); //remove piece that we move
@@ -120,7 +122,7 @@ public class Board {
         pieces.removeIf(pair -> pair.getKey().equals(to)); // remove our piece from the moved position
 
         if (taken != null)
-            pieces.add(new ChessPair<>(to, taken)); //if we took a piece, put it back
+            pieces.add(new ChessPair<>(to, taken)); //if we took a piece in the simulation, put it back
 
         piece.setPosition(from);
         pieces.add(new ChessPair<>(from, piece)); //put the piece back in the initial position

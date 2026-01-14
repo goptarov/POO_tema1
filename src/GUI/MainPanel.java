@@ -15,16 +15,25 @@ public class MainPanel extends JPanel implements ActionListener {
     public MainPanel(AppWindow parent){
         this.parent = parent;
 
-        loginButton.setBackground(Color.GRAY);
+        this.setBackground(new Color(40, 58, 55));
+
+        loginButton.setBackground(new Color(160, 100, 70));
+        loginButton.setForeground(Color.WHITE);
         loginButton.addActionListener(this);
 
-        createAccountButton.setBackground(Color.GRAY);
+        createAccountButton.setBackground(new Color(160, 100, 70));
+        createAccountButton.setForeground(Color.WHITE);
         createAccountButton.addActionListener(this);
 
-        exitButton.setBackground(Color.GRAY);
+        exitButton.setBackground(new Color(160, 100, 70));
+        exitButton.setForeground(Color.WHITE);
         exitButton.addActionListener(this);
 
+        textArea.setFont(new Font("Arial", Font.BOLD, 20));
+        textArea.setBackground(new Color(40, 58, 55));
+        textArea.setForeground(Color.WHITE);
         textArea.setEditable(false);
+
         this.add(textArea);
         this.add(loginButton);
         this.add(createAccountButton);

@@ -1,7 +1,8 @@
 package GUI;
 
+import game.Move;
+
 public interface GameObserver {
-    //void onMovePiece(Move move);
-    //void onPieceCaptured(Piece piece);
-    //void onPlayerSwitch(Player currentPlayer);
+    void onMovePiece(GameInfoBar gameInfoBar, Move move);
+    void onPlayerSwitch();
 }

@@ -12,6 +12,6 @@ public class Queen extends Piece {
 
     @Override
     public char type(){
-        return 'Q';
+        return '\u265B';
     }
 }

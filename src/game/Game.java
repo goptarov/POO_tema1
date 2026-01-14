@@ -117,15 +117,16 @@ public class Game {
     }
 
     public void executeMove(Position from, Position to) throws InvalidMoveException, InvalidCommandException {
+        Piece movingPiece = board.getPieceAt(from);
+        Piece capturedPiece = board.getPieceAt(to);
+
         if (!board.isValidCoordinate(from) || !board.isValidCoordinate(to))
             throw new InvalidCommandException("Invalid move command");
-        Piece movingPiece = board.getPieceAt(from);
         if (movingPiece == null || movingPiece.getColor() != getCurrentPlayer().getColor())
             throw new InvalidMoveException("Invalid piece selected");
         if (!board.isValidMove(from, to))
             throw new InvalidMoveException("Illegal move.");
 
-        Piece capturedPiece = board.getPieceAt(to);
         board.movePiece(from, to);
 
         getCurrentPlayer().recordCapture(capturedPiece);

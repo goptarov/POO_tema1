@@ -12,6 +12,6 @@ public class Pawn extends Piece {
 
     @Override
     public char type() {
-        return 'P';
+        return '\u265F';
     }
 }

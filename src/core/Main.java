@@ -445,6 +445,10 @@ public class Main{
         this.currentGame = currentGame;
     }
 
+    public void removeGame(Game game) {
+        this.games.remove(games);
+    }
+
     public void addGame(Game game) {
         this.games.put(game.getId(), game);
     }
